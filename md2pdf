@@ -52,6 +52,50 @@ if [ ! -f "$INPUT_FILE" ]; then
   exit 1
 fi
 
+# Pilih ukuran kertas secara interaktif
+echo "Silahkan pilih ukuran kertas:"
+echo "1) smartphone (90mm x 200mm)"
+echo "2) A5 (145mm x 210mm)"
+echo "3) B5 (176mm x 250mm)"
+read -p "Masukkan pilihan (1-3): " pilihan
+
+case $pilihan in
+  1)
+    PAPERWIDTH="90mm"
+    PAPERHEIGHT="200mm"
+    TOP="2cm"
+    BOTTOM="2cm"
+    LEFT="0.5cm"
+    RIGHT="0.5cm"
+    ;;
+  2)
+    PAPERWIDTH="145mm"
+    PAPERHEIGHT="210mm"
+    TOP="2cm"
+    BOTTOM="2cm"
+    LEFT="2.5cm"
+    RIGHT="2.2cm"
+    ;;
+  3)
+    PAPERWIDTH="176mm"
+    PAPERHEIGHT="250mm"
+    TOP="2cm"
+    BOTTOM="2cm"
+    LEFT="2.5cm"
+    RIGHT="2.2cm"
+    ;;
+  *)
+    echo "Pilihan tidak valid, menggunakan default smartphone"
+    PAPERWIDTH="90mm"
+    PAPERHEIGHT="200mm"
+    TOP="2cm"
+    BOTTOM="2cm"
+    LEFT="0.5cm"
+    RIGHT="0.5cm"
+    ;;
+esac
+
+
 # Setelah parsing argumen, tambahkan ini:
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -153,17 +197,23 @@ build_with_pandoc() {
     --from markdown+yaml_metadata_block+native_divs+native_spans \
     --template="$TEMPLATE_PATH" \
     --metadata=implicit_figures=false \
+    --metadata=paperwidth="$PAPERWIDTH" \
+    --metadata=paperheight="$PAPERHEIGHT" \
+    --metadata=top="$TOP" \
+    --metadata=bottom="$BOTTOM" \
+    --metadata=left="$LEFT" \
+    --metadata=right="$RIGHT" \
     "${LUA_FILTERS[@]}" \
-    "${engine_args[@]}" -t "$output_format" \
+    ${engine_args[@]} -t "$output_format" \
     -o "$output_file"
 }
-
 
 # Step 1: Preprocessing
 convert_quotes
 convert_images
 
 echo "📦 Membuat PDF dari $INPUT_FILE ke $RESULT_DIR dengan tema $THEME_NAME ..."
+echo "📐 Ukuran kertas: $PAPERWIDTH x $PAPERHEIGHT"
 
 LUA_FILTERS=()
 if [ -d "$FILTER_DIR" ]; then
