@@ -2,12 +2,15 @@
 
 % Font setup
 \usepackage[normalem]{ulem}
+\let\st\sout
 \usepackage{fontspec}
+\usepackage{needspace}
+\usepackage{amssymb}
 
 \setmainfont[
-  BoldFont={themes/minimalist-template/fonts/EBGaramond-Bold.ttf},
-  ItalicFont={themes/minimalist-template/fonts/EBGaramond-Italic.ttf},
-  BoldItalicFont={themes/minimalist-template/fonts/EBGaramond-BoldItalic.ttf}
+  BoldFont={EB Garamond Bold},
+  ItalicFont={EB Garamond Italic},
+  BoldItalicFont={EB Garamond Bold Italic}
 ]{EB Garamond}
 \setsansfont[
   BoldFont={/Users/fakhrirafiki/Documents/projects/md2pdf/themes/fonts/JosefinSans-Bold.ttf},
@@ -25,7 +28,9 @@
 
 % Page layout
 \usepackage{geometry}
-\geometry{paperwidth=145mm, paperheight=210mm, top=2cm, bottom=2cm, left=2.5cm, right=2.2cm}
+\geometry{paperwidth=90mm, paperheight=200mm, top=2cm, bottom=2cm, left=0.5cm, right=0.5cm} % smartphone
+% \geometry{paperwidth=145mm, paperheight=210mm, top=2cm, bottom=2cm, left=2.5cm, right=2.2cm} % A5
+
 
 % Hyperlink support
 \usepackage[hidelinks]{hyperref}
@@ -45,38 +50,42 @@
 
 % Section heading
 \usepackage{titlesec}
-\titleformat{\chapter}[display]
-  {\sffamily\bfseries\Huge}
-  {\Huge\thechapter}
-  {-1em}
-  {\vspace{0.5em}\rule[1pt]{4cm}{0.4pt}\\\sffamily\MakeUppercase}
+\titleclass{\chapter}{top} % REGISTER chapter ke titlesec
 
-\titleformat{\section}{\sffamily\bfseries\fontsize{30pt}{32pt}\selectfont\centering}{}{0em}{\vspace{0.25em}} 
+\titleformat{\chapter}[display]
+  {\sffamily\mdseries\Huge}
+  {\color{gray}\sffamily\fontseries{t}\selectfont\Huge Chapter \thechapter}
+  {-0.5em}
+  {\vspace{0.5em}\raggedright\sffamily\bfseries\Huge\color{black}}
+
+\titleformat{\section}{\sffamily\bfseries\huge\selectfont\centering}{}{0em}{\vspace{0.25em}}
 
 \titleformat{\subsection}
-  {\sffamily\bfseries\normalsize}
-  {}{0em}{}
-
-\titleformat{\subsubsection}
   {\sffamily\bfseries\normalsize}
   {}{0em}{}
 
 % Table of contents formatting
 \usepackage{tocloft}
 
-% Page numbering
+% Page numbering with custom header and footer rules
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[LE]{\sffamily\small\MakeUppercase{$title$}}
-\fancyhead[RO]{\sffamily\small\rightmark}
-\fancyfoot[C]{\thepage}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
 
-% Header tracking for \rightmark
+% Conditional chapter label (empty if chapter 0)
+\usepackage{ifthen}
+\newcommand{\chapterheaderlabel}{\ifthenelse{\value{chapter}=0}{}{\addfontfeatures{LetterSpace=2}\sffamily Chapter \thechapter}}
+
+\fancyhead[L]{\textcolor{gray}{\chapterheaderlabel}}
+\fancyhead[R]{\textcolor{gray}{\thepage}}
+\setlength{\headsep}{0.2cm} % added vertical space between header and rule
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.8pt}
 \usepackage{etoolbox}
-\pretocmd{\chapter}{\markright{\thechapter.\ #1}}{}{}
+\makeatletter
+\patchcmd{\headrule}{\hrule}{\color{gray}\hrule}{}{}
+\patchcmd{\footrule}{\hrule}{\color{gray}\hrule}{}{}
+\makeatother
 
 % Drop cap (lettrine)
 \usepackage{lettrine}
@@ -109,7 +118,9 @@
 \usepackage{tabularx} % <-- Tambahan untuk table wrapping
 \newenvironment{pandocbounded}{}{}
 
-\newcommand{\imageins}[4]{\begin{figure}[!ht]
+\newcommand{\imageins}[4]{%
+\needspace{8\baselineskip}%
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=#2\textwidth]{#1}
   \caption{#3}
@@ -123,6 +134,10 @@
 
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Chapter page break and TOC fix
+\usepackage{etoolbox}
+\pretocmd{\chapter}{\cleardoublepage\phantomsection}{}{}
 
 % Title metadata bindings
 \title{$title$}
@@ -146,6 +161,8 @@
 \makeatother
 
 \begin{document}
+
+\setcounter{secnumdepth}{3}
 
 \sloppy
 \emergencystretch=3em

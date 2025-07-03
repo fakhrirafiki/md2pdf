@@ -1,6 +1,7 @@
 -- unnumbered-chapters.lua
 function Header(el)
   local unnumbered_titles = {
+    "Pembukaan",
     "Pendahuluan",
     "Catatan Penulis",
     "Bagian Nilai",
