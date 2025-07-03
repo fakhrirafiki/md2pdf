@@ -1,19 +1,21 @@
 \documentclass[openany]{book}
 
 % Font setup
+\usepackage[normalem]{ulem}
+\let\st\sout
 \usepackage{fontspec}
-
 \usepackage{needspace}
+\usepackage{amssymb}
 
 \setmainfont[
-  BoldFont={themes/minimalist-template/fonts/EBGaramond-Bold.ttf},
-  ItalicFont={themes/minimalist-template/fonts/EBGaramond-Italic.ttf},
-  BoldItalicFont={themes/minimalist-template/fonts/EBGaramond-BoldItalic.ttf}
+  BoldFont={EB Garamond Bold},
+  ItalicFont={EB Garamond Italic},
+  BoldItalicFont={EB Garamond Bold Italic}
 ]{EB Garamond}
 \setsansfont[
-  BoldFont={themes/minimalist-template/fonts/JosefinSans-Bold.ttf}, 
-  ItalicFont={themes/minimalist-template/fonts/JosefinSans-Italic.ttf},
-  BoldItalicFont={themes/minimalist-template/fonts/JosefinSans-BoldItalic.ttf}
+  BoldFont={/Users/fakhrirafiki/Documents/projects/md2pdf/themes/fonts/JosefinSans-Bold.ttf},
+  ItalicFont={/Users/fakhrirafiki/Documents/projects/md2pdf/themes/fonts/JosefinSans-Italic.ttf},
+  BoldItalicFont={/Users/fakhrirafiki/Documents/projects/md2pdf/themes/fonts/JosefinSans-BoldItalic.ttf}
 ]{Josefin Sans}
 \setmonofont{Kode Mono}
 
@@ -50,7 +52,7 @@
 
 \titleformat{\chapter}[display]
   {\sffamily\mdseries\Huge}
-  {\color{gray}\sffamily\mdseries\Huge Chapter \thechapter}
+  {\color{gray}\sffamily\fontseries{t}\selectfont\Huge Chapter \thechapter}
   {-0.5em}
   {\vspace{0.5em}\raggedright\sffamily\bfseries\Huge\color{black}}
 
@@ -157,6 +159,7 @@
 \makeatother
 
 \begin{document}
+
 \setcounter{secnumdepth}{3}
 
 \sloppy

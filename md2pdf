@@ -52,18 +52,34 @@ if [ ! -f "$INPUT_FILE" ]; then
   exit 1
 fi
 
+# Setelah parsing argumen, tambahkan ini:
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 MD_DIR=$(dirname "$INPUT_FILE")
 BASENAME=$(basename "$INPUT_FILE" .md)
 TIMESTAMP=$(date +%y%m%d-%H%M)
 RESULT_DIR="$MD_DIR/result"
 mkdir -p "$RESULT_DIR"
 
-METADATA_FILE="metadata.yaml"
-TEMPLATE_PATH="themes/$THEME_NAME/main.tex"
-FILTER_DIR="themes/$THEME_NAME/filters"
+# Metadata fallback logic
+MD_METADATA="$MD_DIR/metadata.yaml"
+ROOT_METADATA="$SCRIPT_DIR/metadata.yaml"
+
+if [ -f "$MD_METADATA" ]; then
+  METADATA_FILE="$MD_METADATA"
+elif [ -f "$ROOT_METADATA" ]; then
+  METADATA_FILE="$ROOT_METADATA"
+else
+  METADATA_FILE=""
+  echo "⚠️  metadata.yaml tidak ditemukan, lanjut tanpa metadata."
+fi
+
 CONVERTED_FILE="./build/${BASENAME}.converted.md"
 OUTPUT_FILE="$RESULT_DIR/${BASENAME}-${TIMESTAMP}.pdf"
 OUTPUT_TEX_FILE="$RESULT_DIR/${BASENAME}-${TIMESTAMP}.tex"
+
+TEMPLATE_PATH="$SCRIPT_DIR/themes/$THEME_NAME/main.tex"
+FILTER_DIR="$SCRIPT_DIR/themes/$THEME_NAME/filters"
 
 convert_quotes() {
   awk '
@@ -127,15 +143,21 @@ build_with_pandoc() {
     engine_args=(--pdf-engine=xelatex)
   fi
 
+  local metadata_arg=()
+  if [ -n "$METADATA_FILE" ]; then
+    metadata_arg=(--metadata-file="$METADATA_FILE")
+  fi
+
   pandoc "$CONVERTED_FILE" \
-    --metadata-file="$METADATA_FILE" \
+    "${metadata_arg[@]}" \
     --from markdown+yaml_metadata_block+native_divs+native_spans \
     --template="$TEMPLATE_PATH" \
     --metadata=implicit_figures=false \
     "${LUA_FILTERS[@]}" \
-    ${engine_args[@]} -t "$output_format" \
+    "${engine_args[@]}" -t "$output_format" \
     -o "$output_file"
 }
+
 
 # Step 1: Preprocessing
 convert_quotes
