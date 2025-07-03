@@ -6,6 +6,9 @@
 \usepackage{fontspec}
 \usepackage{needspace}
 \usepackage{amssymb}
+\usepackage{tikz}
+
+\usepackage{adjustbox}
 
 \setmainfont[
   BoldFont={EB Garamond Bold},
@@ -145,6 +148,37 @@
 \usepackage{etoolbox}
 \pretocmd{\chapter}{\cleardoublepage\phantomsection}{}{}
 
+
+% Cover halaman tanpa nomor, tanpa header/footer
+
+
+
+\newcommand{\includecoverfill}[1]{%
+  \clearpage
+  \thispagestyle{empty}
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[at=(current page.center), inner sep=0pt] {
+      \includegraphics[width=\paperwidth, height=\paperheight, keepaspectratio=false]{#1}
+    };
+  \end{tikzpicture}
+  \clearpage
+}
+
+
+
+
+
+\newcommand{\includecover}[1]{
+  \clearpage
+  \thispagestyle{empty}
+  \noindent
+  \makebox[\paperwidth][l]{%
+  \includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{#1}
+  }
+  \clearpage
+}
+
+
 % Title metadata bindings
 \title{$title$}
 \author{$author$}
@@ -167,6 +201,9 @@
 \makeatother
 
 \begin{document}
+
+% --- Cover depan ---
+\includecover{cover-front.jpg} % Bisa diganti jadi png juga
 
 \setcounter{secnumdepth}{3}
 
@@ -193,4 +230,5 @@
 
 $body$
 
+\includecover{cover-back.jpg} % Bisa diganti jadi png juga
 \end{document}
