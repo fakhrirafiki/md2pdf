@@ -52,7 +52,8 @@ if [ ! -f "$INPUT_FILE" ]; then
   exit 1
 fi
 
-# Cek dialog terinstall
+# Pilih ukuran kertas secara interaktif
+# Pastikan dialog terinstall dulu ya
 if ! command -v dialog &> /dev/null; then
   echo "❌ dialog belum terinstall. Install dulu dengan: brew install dialog"
   exit 1
@@ -62,6 +63,7 @@ CHOICE=$(dialog --clear --stdout --menu "Pilih ukuran kertas:" 10 50 3 \
   1 "Smartphone  90×200mm  [2/2/0.5/0.5 cm]" \
   2 "A5          145×210mm [2/2/2.5/2.2 cm]" \
   3 "B5          176×250mm [2/2/2.5/2.2 cm]")
+
 
 clear
 
@@ -100,15 +102,21 @@ esac
 echo "Kamu memilih ukuran kertas: $PAPERWIDTH x $PAPERHEIGHT"
 echo "Margin: top=$TOP, bottom=$BOTTOM, left=$LEFT, right=$RIGHT"
 
+
+
+# Setelah parsing argumen, tambahkan ini:
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 MD_DIR=$(dirname "$INPUT_FILE")
 BASENAME=$(basename "$INPUT_FILE" .md)
 TIMESTAMP=$(date +%y%m%d-%H%M)
 RESULT_DIR="$MD_DIR/result"
 mkdir -p "$RESULT_DIR"
 
+# Metadata fallback logic
 MD_METADATA="$MD_DIR/metadata.yaml"
 ROOT_METADATA="$SCRIPT_DIR/metadata.yaml"
+
 if [ -f "$MD_METADATA" ]; then
   METADATA_FILE="$MD_METADATA"
 elif [ -f "$ROOT_METADATA" ]; then
@@ -208,6 +216,7 @@ build_with_pandoc() {
     -o "$output_file"
 }
 
+# Step 1: Preprocessing
 convert_quotes
 convert_images
 
@@ -223,46 +232,16 @@ else
   echo "⚠️  Folder filter tidak ditemukan: $FILTER_DIR"
 fi
 
-# Build main PDF
 build_with_pandoc "$OUTPUT_FILE" pdf
 
 if [ $? -eq 0 ]; then
   echo "✅ PDF berhasil dibuat: $OUTPUT_FILE"
-
-  # Paths untuk cover PDF (bisa diubah sesuai kebutuhan)
-  COVER_FRONT="cover-front.pdf"
-  COVER_BACK="cover-back.pdf"
-  FINAL_OUTPUT_FILE="${RESULT_DIR}/${BASENAME}-${TIMESTAMP}-final.pdf"
-
-  # Cek dan gabungkan PDF cover jika ada
-  if [[ -f "$COVER_FRONT" || -f "$COVER_BACK" ]]; then
-    FILES_TO_MERGE=""
-    [[ -f "$COVER_FRONT" ]] && FILES_TO_MERGE="$COVER_FRONT"
-    FILES_TO_MERGE="$FILES_TO_MERGE $OUTPUT_FILE"
-    [[ -f "$COVER_BACK" ]] && FILES_TO_MERGE="$FILES_TO_MERGE $COVER_BACK"
-
-    echo "🔗 Menggabungkan cover dan isi buku..."
-
-    # Pastikan pdfunite sudah terinstall (brew install poppler)
-    pdfunite $FILES_TO_MERGE "$FINAL_OUTPUT_FILE"
-
-    if [ $? -eq 0 ]; then
-      echo "✅ PDF final berhasil dibuat: $FINAL_OUTPUT_FILE"
-      open "$FINAL_OUTPUT_FILE"
-    else
-      echo "❌ Gagal menggabungkan PDF"
-      exit 1
-    fi
-  else
-    open "$OUTPUT_FILE"
-  fi
-
+  open "$OUTPUT_FILE"
 else
   echo "❌ Gagal membuat PDF. Silakan periksa error di atas."
   exit 1
 fi
 
-# Export TEX jika diminta
 if [ "$EXPORT_TEX" = true ]; then
   echo "📝 Mengekspor file TEX ke $OUTPUT_TEX_FILE ..."
   build_with_pandoc "$OUTPUT_TEX_FILE" latex
