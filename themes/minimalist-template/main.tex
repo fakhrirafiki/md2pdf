@@ -151,26 +151,21 @@
 
 % Cover halaman tanpa nomor, tanpa header/footer
 
-
-
-
-
-
-
-
 \newcommand{\includecover}[1]{
   \begin{titlepage}
+    \thispagestyle{empty}
+    \begin{tikzpicture}[overlay, remember picture]
+      \node[anchor=center] at (current page.center) {
+          \includegraphics[height=\paperheight]{#1}
+      };
+    \end{tikzpicture}
+  \end{titlepage}
+  % Tambah halaman kosong tanpa nomor dan tanpa header/footer
   \clearpage
   \thispagestyle{empty}
-  \begin{tikzpicture}[overlay, remember picture]
-  \node[anchor=center] at (current page.center) {
-      \includegraphics[height=\paperheight]{#1}
-  };
-  \end{tikzpicture}
+  \mbox{}
   \clearpage
-  \end{titlepage}
 }
-
 
 % Title metadata bindings
 \title{$title$}
