@@ -153,29 +153,24 @@
 
 
 
-\newcommand{\includecoverfill}[1]{%
-  \clearpage
-  \thispagestyle{empty}
-  \begin{tikzpicture}[remember picture, overlay]
-    \node[at=(current page.center), inner sep=0pt] {
-      \includegraphics[width=\paperwidth, height=\paperheight, keepaspectratio=false]{#1}
-    };
-  \end{tikzpicture}
-  \clearpage
-}
 
 
 
 
 
 \newcommand{\includecover}[1]{
+  \begin{titlepage}
   \clearpage
   \thispagestyle{empty}
-  \noindent
-  \makebox[\paperwidth][l]{%
-  \includegraphics[width=\paperwidth,height=\paperheight,keepaspectratio]{#1}
-  }
+  \begin{tikzpicture}[overlay, remember picture]
+  \node[anchor=south west, 
+        xshift=-0.15cm, 
+        yshift=-0.15cm] 
+        at (current page.south west)
+       {\includegraphics[width=\paperwidth,height=\paperheight]{#1}};
+  \end{tikzpicture}
   \clearpage
+  \end{titlepage}
 }
 
 
