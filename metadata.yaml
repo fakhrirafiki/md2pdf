@@ -1,0 +1,17 @@
+title: "Definisikan Hidupmu Sebelum Didefinisikan Orang Lain"
+subtitle: "Kalau hidupmu terasa berat, mungkin tiga hal ini belum selaras"
+author: "Fakhri Rafiki"
+date: "Juni 2025"
+
+documentclass: book
+
+# Catatan: Font akan dikonfigurasi di preamble LaTeX agar lebih stabil
+# mainfont, sansfont, dan monofont diabaikan di sini untuk menghindari konflik
+# Gunakan \setmainfont dan \usepackage{fontspec} di preamble LaTeX
+
+lang: "id"
+colorlinks: true
+link-citations: true
+
+toc: true
+toc-title: "Daftar Isi"

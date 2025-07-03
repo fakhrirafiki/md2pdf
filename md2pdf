@@ -1,5 +1,175 @@
 #!/bin/bash
 
-echo "Hello! Ini script md2pdf kamu."
-echo "Argumen yang kamu masukkan: $@"
+mkdir -p ./build
 
+show_help() {
+  echo "Usage: md2pdf [file.md] [--theme THEME_NAME] [--latex]"
+  echo "  --theme        Pilih template/tema PDF dan latex (default: minimalist-template)"
+  echo "  --latex        Juga export ke TEX (latex) selain PDF"
+  echo "  -h, --help     Tampilkan bantuan ini"
+  exit 1
+}
+
+# Defaults
+THEME_NAME="minimalist-template"
+EXPORT_TEX=false
+
+# Parse args
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --theme)
+      THEME_NAME="$2"
+      shift 2
+      ;;
+    --latex)
+      EXPORT_TEX=true
+      shift
+      ;;
+    -h|--help)
+      show_help
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+set -- "${POSITIONAL[@]}"
+
+if [ $# -eq 0 ]; then
+  show_help
+fi
+
+INPUT_FILE="$1"
+if [[ ! "$INPUT_FILE" =~ \.md$ ]]; then
+  echo "❌ Input harus file markdown (.md)!"
+  exit 1
+fi
+if [ ! -f "$INPUT_FILE" ]; then
+  echo "❌ File '$INPUT_FILE' tidak ditemukan!"
+  exit 1
+fi
+
+BASENAME=$(basename "$INPUT_FILE" .md)
+TIMESTAMP=$(date +%y%m%d-%H%M)
+METADATA_FILE="metadata.yaml"
+TEMPLATE_PATH="themes/$THEME_NAME/main.tex"
+FILTER_DIR="themes/$THEME_NAME/filters"
+OUTPUT_DIR="./output/$THEME_NAME"
+mkdir -p "$OUTPUT_DIR"
+CONVERTED_FILE="./build/${BASENAME}.converted.md"
+OUTPUT_FILE="$OUTPUT_DIR/${BASENAME}-${TIMESTAMP}.pdf"
+OUTPUT_TEX_FILE="$OUTPUT_DIR/${BASENAME}-${TIMESTAMP}.tex"
+
+convert_quotes() {
+  awk '
+  BEGIN { quoting=0 }
+  /^> / {
+    if (!quoting) {
+      print "::: {.quotebox}"
+      quoting=1
+    }
+    sub(/^> /, "")
+    print
+    next
+  }
+  {
+    if (quoting) {
+      print ":::"
+      quoting=0
+    }
+    print
+  }
+  END {
+    if (quoting) print ":::"
+  }
+  ' "$INPUT_FILE" > "$CONVERTED_FILE"
+}
+
+convert_images() {
+  awk '
+    {
+      line = $0
+      if (match(line, /!\[[^]]*\]\([^)]*\)\{[^}]*width=[0-9]+%[^}]*\}/)) {
+        alt_start = index(line, "![") + 2
+        alt_end = index(line, "](") - 1
+        alt = substr(line, alt_start, alt_end - alt_start + 1)
+        path_start = index(line, "](") + 2
+        path_end = index(line, ")") - 1
+        path = substr(line, path_start, path_end - path_start + 1)
+        w_match = match(line, /width=[0-9]+%/)
+        if (w_match > 0) {
+          width_val = substr(line, RSTART + 6, RLENGTH - 7)
+          if (width_val == "100") width = "1.0"
+          else width = "0." width_val
+        } else {
+          width = "1.0"
+        }
+        printf "\\imageins{%s}{%s}{%s}{X.X}\n", path, width, alt
+        next
+      }
+      print
+    }
+  ' "$CONVERTED_FILE" > "$CONVERTED_FILE.img"
+  mv "$CONVERTED_FILE.img" "$CONVERTED_FILE"
+}
+
+
+build_with_pandoc() {
+  local output_file=$1
+  local output_format=$2
+
+  local engine_args=()
+  if [ "$output_format" = "pdf" ]; then
+    engine_args=(--pdf-engine=xelatex)
+  fi
+
+  pandoc "$CONVERTED_FILE" \
+    --metadata-file="$METADATA_FILE" \
+    --from markdown+yaml_metadata_block+native_divs+native_spans \
+    --template="$TEMPLATE_PATH" \
+    --metadata=implicit_figures=false \
+    "${LUA_FILTERS[@]}" \
+    ${engine_args[@]} -t "$output_format" \
+    -o "$output_file"
+}
+
+# Step 1: Preprocessing
+convert_quotes
+convert_images
+
+echo "📦 Membuat PDF dari $INPUT_FILE dengan tema $THEME_NAME ..."
+
+LUA_FILTERS=()
+if [ -d "$FILTER_DIR" ]; then
+  for file in "$FILTER_DIR"/*.lua; do
+    [ -e "$file" ] && LUA_FILTERS+=(--lua-filter="$file")
+  done
+else
+  echo "⚠️  Folder filter tidak ditemukan: $FILTER_DIR"
+fi
+
+build_with_pandoc "$OUTPUT_FILE" pdf
+
+if [ $? -eq 0 ]; then
+  echo "✅ PDF berhasil dibuat: $OUTPUT_FILE"
+  open "$OUTPUT_FILE"
+else
+  echo "❌ Gagal membuat PDF. Silakan periksa error di atas."
+  exit 1
+fi
+
+if [ "$EXPORT_TEX" = true ]; then
+  echo "📝 Mengekspor file TEX ke $OUTPUT_TEX_FILE ..."
+  build_with_pandoc "$OUTPUT_TEX_FILE" latex
+
+  if [ $? -eq 0 ]; then
+    echo "✅ TEX berhasil diekspor: $OUTPUT_TEX_FILE"
+  else
+    echo "❌ Gagal mengekspor TEX."
+  fi
+else
+  echo "ℹ️  Lewati ekspor TEX (aktifkan dengan --latex)"
+fi
