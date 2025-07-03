@@ -1,5 +1,4 @@
 build/
 output/
 *.pdf
-*.tex
 .DS_Store

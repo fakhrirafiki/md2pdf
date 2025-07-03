@@ -52,16 +52,18 @@ if [ ! -f "$INPUT_FILE" ]; then
   exit 1
 fi
 
+MD_DIR=$(dirname "$INPUT_FILE")
 BASENAME=$(basename "$INPUT_FILE" .md)
 TIMESTAMP=$(date +%y%m%d-%H%M)
+RESULT_DIR="$MD_DIR/result"
+mkdir -p "$RESULT_DIR"
+
 METADATA_FILE="metadata.yaml"
 TEMPLATE_PATH="themes/$THEME_NAME/main.tex"
 FILTER_DIR="themes/$THEME_NAME/filters"
-OUTPUT_DIR="./output/$THEME_NAME"
-mkdir -p "$OUTPUT_DIR"
 CONVERTED_FILE="./build/${BASENAME}.converted.md"
-OUTPUT_FILE="$OUTPUT_DIR/${BASENAME}-${TIMESTAMP}.pdf"
-OUTPUT_TEX_FILE="$OUTPUT_DIR/${BASENAME}-${TIMESTAMP}.tex"
+OUTPUT_FILE="$RESULT_DIR/${BASENAME}-${TIMESTAMP}.pdf"
+OUTPUT_TEX_FILE="$RESULT_DIR/${BASENAME}-${TIMESTAMP}.tex"
 
 convert_quotes() {
   awk '
@@ -116,7 +118,6 @@ convert_images() {
   mv "$CONVERTED_FILE.img" "$CONVERTED_FILE"
 }
 
-
 build_with_pandoc() {
   local output_file=$1
   local output_format=$2
@@ -140,7 +141,7 @@ build_with_pandoc() {
 convert_quotes
 convert_images
 
-echo "📦 Membuat PDF dari $INPUT_FILE dengan tema $THEME_NAME ..."
+echo "📦 Membuat PDF dari $INPUT_FILE ke $RESULT_DIR dengan tema $THEME_NAME ..."
 
 LUA_FILTERS=()
 if [ -d "$FILTER_DIR" ]; then

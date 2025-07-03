@@ -1,0 +1,185 @@
+\documentclass[openany]{book}
+
+% Font setup
+\usepackage{fontspec}
+
+\usepackage{needspace}
+
+\setmainfont[
+  BoldFont={themes/minimalist-template/fonts/EBGaramond-Bold.ttf},
+  ItalicFont={themes/minimalist-template/fonts/EBGaramond-Italic.ttf},
+  BoldItalicFont={themes/minimalist-template/fonts/EBGaramond-BoldItalic.ttf}
+]{EB Garamond}
+\setsansfont[
+  BoldFont={themes/minimalist-template/fonts/JosefinSans-Bold.ttf}, 
+  ItalicFont={themes/minimalist-template/fonts/JosefinSans-Italic.ttf},
+  BoldItalicFont={themes/minimalist-template/fonts/JosefinSans-BoldItalic.ttf}
+]{Josefin Sans}
+\setmonofont{Kode Mono}
+
+% Arabic font setup using polyglossia
+\usepackage{polyglossia}
+\setmainlanguage{indonesian}
+\setotherlanguage{arabic}
+\newfontfamily\arabicfont[Script=Arabic]{Amiri}
+\newcommand{\arabicfontwrap}[1]{\textarabic{#1}}
+
+% Page layout
+\usepackage{geometry}
+\geometry{paperwidth=90mm, paperheight=200mm, top=2cm, bottom=2cm, left=0.5cm, right=0.5cm}
+
+% Hyperlink support
+\usepackage[hidelinks]{hyperref}
+
+% Default font size and style
+\renewcommand{\normalsize}{\fontsize{12pt}{16pt}\selectfont}
+
+% Paragraph spacing
+\setlength{\parskip}{1.5em}
+\setlength{\parindent}{0pt}
+
+% Caption style
+\usepackage{caption}
+\DeclareCaptionFont{it}{\sffamily \fontsize{10pt}{12pt}\selectfont}
+\DeclareCaptionLabelFormat{newfigname}{Gambar.#2 }
+\captionsetup{font={it},labelformat={newfigname},labelsep={none},textformat={period}}
+
+% Section heading
+\usepackage{titlesec}
+\titleclass{\chapter}{top} % REGISTER chapter ke titlesec
+
+\titleformat{\chapter}[display]
+  {\sffamily\mdseries\Huge}
+  {\color{gray}\sffamily\mdseries\Huge Chapter \thechapter}
+  {-0.5em}
+  {\vspace{0.5em}\raggedright\sffamily\bfseries\Huge\color{black}}
+
+\titleformat{\section}{\sffamily\bfseries\huge\selectfont\centering}{}{0em}{\vspace{0.25em}}
+
+\titleformat{\subsection}
+  {\sffamily\bfseries\normalsize}
+  {}{0em}{}
+
+% Table of contents formatting
+\usepackage{tocloft}
+
+% Page numbering with custom header and footer rules
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+
+% Conditional chapter label (empty if chapter 0)
+\usepackage{ifthen}
+\newcommand{\chapterheaderlabel}{\ifthenelse{\value{chapter}=0}{}{\addfontfeatures{LetterSpace=2}\sffamily Chapter \thechapter}}
+
+\fancyhead[L]{\textcolor{gray}{\chapterheaderlabel}}
+\fancyhead[R]{\textcolor{gray}{\thepage}}
+\setlength{\headsep}{0.2cm} % added vertical space between header and rule
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.8pt}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\headrule}{\hrule}{\color{gray}\hrule}{}{}
+\patchcmd{\footrule}{\hrule}{\color{gray}\hrule}{}{}
+\makeatother
+
+% Drop cap (lettrine)
+\usepackage{lettrine}
+
+% Color and framed box
+\usepackage{xcolor}
+\usepackage{mdframed}
+\newmdenv[
+  backgroundcolor=gray!10,
+  topline=false,
+  bottomline=false,
+  rightline=false,
+  leftline=true,
+  linecolor=black,
+  linewidth=3pt,
+  innertopmargin=1em,
+  innerbottommargin=1em,
+  innerleftmargin=1em,
+  innerrightmargin=1em,
+  skipabove=1.5em,
+  skipbelow=1.5em
+]{quotebox}
+
+% Image helper
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{calc}
+\usepackage{tabularx} % <-- Tambahan untuk table wrapping
+\newenvironment{pandocbounded}{}{}
+
+\newcommand{\imageins}[4]{%
+\needspace{8\baselineskip}%
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=#2\textwidth]{#1}
+  \caption{#3}
+  \label{#4}
+  \vspace{0.5em}
+\end{figure}}
+
+\newcommand{\finpara}{\char"2020}
+
+\pagenumbering{arabic}
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Chapter page break and TOC fix
+\usepackage{etoolbox}
+\pretocmd{\chapter}{\cleardoublepage\phantomsection}{}{}
+
+% Title metadata bindings
+\title{$title$}
+\author{$author$}
+\date{$date$}
+\newcommand{\subtitle}[1]{\gdef\@subtitle{#1}}
+\makeatletter
+\def\@subtitle{}
+\subtitle{$subtitle$}
+\renewcommand{\maketitle}{
+  \begin{center}
+    {\Huge \bfseries \sffamily \MakeUppercase{\@title} \par}
+    \vskip 1em
+    {\Large \sffamily \@subtitle \par}
+    \vskip 1em
+    {\large \sffamily \@author \par}
+    \vskip 1em
+    {\large \@date \par}
+  \end{center}
+}
+\makeatother
+
+\begin{document}
+\setcounter{secnumdepth}{3}
+
+\sloppy
+\emergencystretch=3em
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\setcounter{tocdepth}{0}
+\begingroup
+\renewcommand{\cftchapfont}{\rmfamily\normalsize}
+\renewcommand{\cftchappagefont}{\rmfamily\normalsize}
+\renewcommand{\cftchapafterpnum}{\vskip 0.25em}
+\setlength{\cftbeforechapskip}{0.75em}
+\renewcommand{\cftchapnumwidth}{3em}
+\renewcommand{\contentsname}{Daftar Isi}
+\tableofcontents
+\endgroup
+
+\newpage
+\pagenumbering{roman}
+
+$body$
+
+\end{document}
